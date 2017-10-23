@@ -21,13 +21,15 @@ Remove-PSDrive HKCR -Confirm:$false | Out-Null
 #-- load PowerCLI
 get-module vmware* -ListAvailable | Import-Module
 #-- Connect to vCenter service
-Connect-VIServer -Server $vCenter -Port $vCenterPort -ErrorVariable Err1
+Connect-VIServer -Server $vCenter -Port $vCenterPort -ErrorVariable Err1 | Out-Null
 if ($err1) {
     exit
 }
 
 #-- Select VM to connect to
 if (get-vm) {
+
+    $vm=get-vm | Out-GridView -PassThru -Title "Selecteer een VM"
     if ($vm -eq $null) {
         #-- exit when no VM is selected
         Exit
@@ -64,9 +66,11 @@ if (get-vm) {
     if ($RDP_tst.tcptestsucceeded){
         #-- start a RDP session to the VM... RoyalTS is prefered
         if ($Use_RoyalTS){
+            write-host ("Starting RDP to "+ $vm.name + " with Royal TS")
             Start-Process -FilePath $Royal_TS -ArgumentList ("/uri:"+ $vm.ExtensionData.guest.ipaddress+ " /using:adhoc")
         } else {
             #-- No royal TS found so use MSTSC
+            write-host ("Starting RDP to "+ $vm.name + " MSTSC")
             Start-Process mstsc.exe -ArgumentList ("/v:"+$vm.ExtensionData.guest.ipaddress)
         }
     } else {
@@ -76,6 +80,8 @@ if (get-vm) {
 
 
     
+} else {
+    write-host "No VMs found. Did you share VMs in VMware Workstation ?"
 }
 
 Disconnect-VIServer -Confirm:$false -Server $global:DefaultVIServers
