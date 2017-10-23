@@ -85,3 +85,5 @@ if (get-vm) {
 }
 
 Disconnect-VIServer -Confirm:$false -Server $global:DefaultVIServers
+write-host "Closing terminal -- good luck"
+Start-Sleep -Seconds 10
